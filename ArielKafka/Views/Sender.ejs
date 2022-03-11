@@ -7,6 +7,7 @@
         https://www.sitepoint.com/using-redis-node-js/
     -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+
     <script>
         function initSocket() {
             //socket is global
@@ -22,27 +23,29 @@
 
         function startConv() {
             var tr = document.getElementById('openConversations').insertRow();
-            var cStart = tr.insertCell(0);
-            var cCity = tr.insertCell(1);
-            var cTopic = tr.insertCell(2);
-            var cLanguage = tr.insertCell(3);
-            var cGender = tr.insertCell(4);
-            var cAge = tr.insertCell(5);
-            var cEnd = tr.insertCell(6);
+            var cStart = tr.insertCell(0); //time of conversation
+            var cCity = tr.insertCell(1); //city call is coming from
+            var cTopic = tr.insertCell(2); // topic 
+            var cLanguage = tr.insertCell(3); // language of customer
+            var cGender = tr.insertCell(4); // gender of caller
+            var cAge = tr.insertCell(5); // consumer's age
+            var cProduct = tr.insertCell(6) // product type
+            var cEnd = tr.insertCell(7);
+            // var cCalls = tr.insertCell(7) // total calls from this customer
 
             const date = Date.now();
             const dateTimeFormat = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: 'numeric' })
             const [{ value: month }, , { value: day }, , { value: year }, , { value: hour }, , { value: minute }] = dateTimeFormat.formatToParts(date)
 
+            cEnd.innerHTML = "<button onclick='reportEndCall(this.parentNode.parentNode)'>סיום</button>";
             cStart.innerHTML = "<div id='" + date + "''>" + `${day}-${month}-${year} ,${hour}:${minute}` + "</div>";
             cCity.innerHTML = "<select><option value='jerusalem'>ירושלים</option><option value='naaria'>נהריה</option><option value='haifa'>חיפה</option><option value='telAviv'>תל אביב</option><option value='ashdod'>אשדוד</option><option value='Ashkelon'>אשקלון</option><option value='beerSheva'>באר שבע</option></select>";
-            cTopic.innerHTML = "<select><option value='Medical'>טיפול רפואי</option><option value='drugs'>תרופות</option><option value='food'>מזון</option><option value='water'>מים</option><option value='shelter'>מיגון</option><option value='information'>מידע</option><option value='evacuation'>פינוי</option></select>";
+            cTopic.innerHTML = "<select><option value='Join'>הצטרפות</option><option value='service'>שירות</option><option value='complaint'>תלונה</option><option value='disconnect'>ניתוק</option></select>";
             cLanguage.innerHTML = "<select><option value='hebrew'>עברית</option><option value='english'>אנגלית</option><option value='amharic'>אמהרית</option><option value='russian'>רוסית</option><option value='arabic>ערבית</option><option value='thai'>תאילנדית</option></select>";
-            cAge.innerHTML = "<input type='number' min='0' max='120'/>";
             cGender.innerHTML = "<select><option value='male'>גבר</option><option value='female'>אישה</option></select>";
-            cEnd.innerHTML = "<button onclick='reportEndCall(this.parentNode.parentNode)'>סיום</button>";
-
-
+            cAge.innerHTML = "<input type='number' min='10' max='120'/>";
+            // cCalls.innerHTML = "<input type='number' min='10' max='120'/>";
+            cProduct.innerHTML = "<select><option value='homeInternet'>אינטרנט ביתי</option><option value='cables'>כבלים</option><option value='celular'>סלולרי</option><option value='cables'>כבלים</option></select>";
         }
 
         function reportEndCall(row) {
@@ -53,12 +56,14 @@
 
             var message = {};
             message.id = row.cells[0].getElementsByTagName('div')[0].id;
+            message.totalTime = (parseInt(Date.now()) - parseInt(message.id)) / 1000; // seconds
             message.city = row.cells[1].getElementsByTagName('select')[0].value;
-            message.topic = row.cells[2].getElementsByTagName('select')[0].value;
-            message.language = row.cells[3].getElementsByTagName('select')[0].value;
             message.gender = row.cells[4].getElementsByTagName('select')[0].value;
             message.age = (row.cells[5].getElementsByTagName('input')[0].value || 18);
-            message.totalTime = (parseInt(Date.now()) - parseInt(message.id)) / 1000; // seconds
+            // message.calls = rows.cell[7].getElementsByTagName('select')[0].value;
+            message.products = row.cells[6].getElementsByTagName('select')[0].value;
+            message.topic = row.cells[2].getElementsByTagName('select')[0].value;
+            message.language = row.cells[3].getElementsByTagName('select')[0].value;
 
             socket.emit("callDetails", message);
             deleteRow(row);
@@ -73,12 +78,19 @@
     </script>
 </head>
 
+//
+<!-- onload immidiately starts the socket for bidirectional communication -->
+
 <body onload="initSocket()">
     Total Waiting calls:
     <input type="number" id="total" min="0" max="200" value="0">
     <input type="button" value="Set" onclick="sendMessage(total.value)" />
     &nbsp;
-    <select><option value='Emergency'>חירום</option><option>שגרת חירום</option><option>רגיעה</option></select>
+    <select>
+        <option value='holidays'>חגים</option>
+        <option value="suumberBreak">חופשות קיץ</option>
+        <option value="yameiHol">ימי חול</option>
+    </select>
     <hr>
     <input type="button" onclick="startConv()" value="Answer Call" />
     <table id="openConversations" border="1" style="background-color: burlywood;">
@@ -89,6 +101,7 @@
             <th>Language</th>
             <th>Gender</th>
             <th>Age</th>
+            <th>Product</th>
             <th>End</th>
         </tr>
     </table>
