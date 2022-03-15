@@ -2,24 +2,52 @@
 <html lang="en">
 
 <head>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        function initSocket() {
+        function mfunction() {
+
             //socket is global
             socket = io.connect();
-            alert("connected");
+            alert("connected to dashboard");
+
+
+            function sendMessage(total) {
+                socket.emit("totalWaitingCalls", { "totalWaiting": total });
+            }
+
+            // var form = document.getElementById('form');
+            // var input = document.getElementById('input');
+
+            // form.addEventListener('submit', function (e) {
+            //     e.preventDefault();
+            //     if (input.value) {
+            //         socket.emit('totalWaitingCalls', input.value);
+            //         input.value = '';
+            //     }
+            // });
+            console.log("wassup")
+            socket.on('totalWaitingCalls', function (msg) {
+                var item = document.createElement('li');
+                item.textContent = msg.totalWaiting;
+                var messages = document.getElementById('messages').innerHTML = msg.totalWaiting;
+                // messages.set
+                window.scrollTo(0, document.body.scrollHeight);
+            });
         }
 
-        function sendMessage(total) {
-            socket.emit("totalWaitingCalls", { totalWaiting: total });
-        }
     </script>
+
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
 
-<body onload="">
+<body onload="mfunction()">
+    <ul id="messages"></ul>
+    <form id="form" action="">
+        <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
     <h1>HELLO</h1>
     <%= myVar %>
 </body>

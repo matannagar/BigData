@@ -150,18 +150,16 @@ io.on("connection", (socket) => {
     console.log("IO: new user connected");
     socket.on("totalWaitingCalls", (msg) => {
         console.log("Total waiting calls: " + msg.totalWaiting);
-        io.emit(msg)
+        io.emit("totalWaitingCalls", msg);
     });
     socket.on("callDetails", (msg) => {
         console.log(msg);
         io.emit(msg);
         kafka.publish(msg);
         const delay = Math.floor(Math.random() * 5000 + (1000));
+        myVar = "in HERE";
+        dashboard
 
-        setTimeout(() => {  // For each package, according to it's district, timing the semi-randomized arrival time
-            myVar = "in HERE";
-            dashboard
-        }, delay)
     });
 });
 
@@ -170,4 +168,12 @@ server.listen(port, () => {
     console.log(`Server: Ariel app listening at http://localhost:${port}`)
 });
 
-
+/*
+REQUIRED FUNCTIONS:
+1.Number of calls waiting RIGHT NOW
+2. Waiting time for answer
+3. total number of calls per day
+    * calls regarding joining, complaints, disconnect requests
+4. the data will be stored for AI purposes
+5. real time AI 
+*/
