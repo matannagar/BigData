@@ -18,16 +18,15 @@ const prefix = "mo0oa5gi-";
 const topic = `${prefix}new`;
 const producer = new Kafka.Producer(kafkaConf);
 
-const genMessage = m => new Buffer.alloc(m.length,m);
+const genMessage = m => new Buffer.alloc(m.length, m);
 
-producer.on("ready", function(arg) {
+producer.on("ready", function (arg) {
   console.log(`producer Ariel is ready.`);
 });
 producer.connect();
 
-module.exports.publish= function(msg)
-{   
-  m=JSON.stringify(msg);
-  producer.produce(topic, -1, genMessage(m), uuid.v4());  
+module.exports.publish = function (msg) {
+  m = JSON.stringify(msg);
+  producer.produce(topic, -1, genMessage(m), uuid.v4());
   //producer.disconnect();   
 }

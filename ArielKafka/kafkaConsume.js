@@ -24,9 +24,9 @@ const kafkaConf = {
 
 const prefix = "mo0oa5gi-";
 const topic = `${prefix}new`;
-const producer = new Kafka.Producer(kafkaConf);
+// const producer = new Kafka.Producer(kafkaConf);
 
-const genMessage = m => new Buffer.alloc(m.length, m);
+// const genMessage = m => new Buffer.alloc(m.length, m);
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // const express = require("express");
@@ -76,14 +76,6 @@ consumer.on("ready", function (arg) {
   consumer.subscribe(topics);
   consumer.consume();
 })
-// .on('data', async (data) => {
-//   console.log(data.value)
-//   // const district = JSON.parse(data.value).District
-//   broker.publish(district, data.value)
-//   // broker.HSET(JSON.parse(data.value).TrackID, district, data.value, (err, reply) => {
-//   //   if (err) console.error(err)
-//   // })
-// });
 
 consumer.on("data", function (m) {
   console.log(m.value.toString());

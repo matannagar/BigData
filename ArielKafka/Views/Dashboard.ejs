@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        function initSocket() {
+            //socket is global
+            socket = io.connect();
+            alert("connected");
+        }
+
+        function sendMessage(total) {
+            socket.emit("totalWaitingCalls", { totalWaiting: total });
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body onload="">
+    <h1>HELLO</h1>
+    <%= myVar %>
+</body>
+
+</html>
