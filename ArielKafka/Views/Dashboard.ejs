@@ -15,21 +15,21 @@
                 socket.emit("totalWaitingCalls", { "totalWaiting": total });
             }
 
-            // var form = document.getElementById('form');
-            // var input = document.getElementById('input');
-
-            // form.addEventListener('submit', function (e) {
-            //     e.preventDefault();
-            //     if (input.value) {
-            //         socket.emit('totalWaitingCalls', input.value);
-            //         input.value = '';
-            //     }
-            // });
-            console.log("wassup")
+            //Receiving number of total waiting calls
             socket.on('totalWaitingCalls', function (msg) {
                 var item = document.createElement('li');
                 item.textContent = msg.totalWaiting;
                 var messages = document.getElementById('messages').innerHTML = msg.totalWaiting;
+                // messages.set
+                window.scrollTo(0, document.body.scrollHeight);
+            });
+
+            //Receiving&Presenting call information
+            socket.on('callDetails', function (msg) {
+                var item = document.createElement('li');
+                item.textContent = msg;
+                var messages = document.getElementById('messages').innerHTML =
+                    "Call Just Ended:\n " + msg.id + msg.totalTime + msg.city;
                 // messages.set
                 window.scrollTo(0, document.body.scrollHeight);
             });

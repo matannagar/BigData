@@ -22,7 +22,7 @@ redisSender.connect();
 // let redisPublisher = redisClient.duplicate()
 redisClient.subscribe(['calls'])
 
-redisClient.on("message", async (channel, data) => {
+redisClient.on("message", async (channel, message) => {
     console.log("inside redisClient!")
     // const pack = JSON.parse(data);
     // // do things with the data
@@ -88,11 +88,11 @@ kafkaConsumer.on("ready", function (arg) {
     kafkaConsumer.consume();
 })
     .on('data', async (data) => {
-        const call = JSON.parse(data.value)["id"]
+        const call = JSON.parse(data.value)
         redisSender.set('MATAN', "27", function (err, reply) {
             console.log(reply);
         });
-        console.log("hereeeeeee" + call)
+        io.emit("callDetails", call);
     })
 
 kafkaConsumer.on("data", function (m) {

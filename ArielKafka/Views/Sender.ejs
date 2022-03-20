@@ -1,3 +1,16 @@
+<!-- 
+    Sender page is responsible for generating fake calls.
+    Each call contains the following information:
+    1. Time of year: holidays, summer break, every other day
+    2. Call start time 
+    3. Name
+    4. City
+    5. Gender
+    6. Age of the caller
+    7. Total number of calls from this caller
+    8. Product
+    9. Call topic: Joining, cancelling, service, complaint
+ -->
 <html>
 
 <head>
@@ -9,6 +22,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
 
     <script>
+        var customers;
         function initSocket() {
             //socket is global
             socket = io.connect();
@@ -18,61 +32,120 @@
         function sendMessage(total) {
             socket.emit("totalWaitingCalls", { totalWaiting: total });
         }
+        //Generating random numbers
+        function getRandomArbitrary(min, max) {
+            return Math.floor(Math.random() * (max - min) + min);
+        }
+        //calculate age
+        function getAge(dateString) {
+            var ageInMilliseconds = new Date() - new Date(dateString);
+            return Math.floor(ageInMilliseconds / 1000 / 60 / 60 / 24 / 365); // convert to years
+        }
     </script>
     <script>
-
+        var totalCalls = {}
         function startConv() {
-            var tr = document.getElementById('openConversations').insertRow();
-            var cStart = tr.insertCell(0); //time of conversation
-            var cCity = tr.insertCell(1); //city call is coming from
-            var cTopic = tr.insertCell(2); // topic 
-            var cLanguage = tr.insertCell(3); // language of customer
-            var cGender = tr.insertCell(4); // gender of caller
-            var cAge = tr.insertCell(5); // consumer's age
-            var cProduct = tr.insertCell(6) // product type
-            var cEnd = tr.insertCell(7);
-            // var cCalls = tr.insertCell(7) // total calls from this customer
 
-            const date = Date.now();
-            const dateTimeFormat = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: 'numeric' })
-            const [{ value: month }, , { value: day }, , { value: year }, , { value: hour }, , { value: minute }] = dateTimeFormat.formatToParts(date)
+            //count calls from each customer
 
-            cEnd.innerHTML = "<button onclick='reportEndCall(this.parentNode.parentNode)'>סיום</button>";
-            cStart.innerHTML = "<div id='" + date + "''>" + `${day}-${month}-${year} ,${hour}:${minute}` + "</div>";
-            cCity.innerHTML = "<select><option value='jerusalem'>ירושלים</option><option value='naaria'>נהריה</option><option value='haifa'>חיפה</option><option value='telAviv'>תל אביב</option><option value='ashdod'>אשדוד</option><option value='Ashkelon'>אשקלון</option><option value='beerSheva'>באר שבע</option></select>";
-            cTopic.innerHTML = "<select><option value='Join'>הצטרפות</option><option value='service'>שירות</option><option value='complaint'>תלונה</option><option value='disconnect'>ניתוק</option></select>";
-            cLanguage.innerHTML = "<select><option value='hebrew'>עברית</option><option value='english'>אנגלית</option><option value='amharic'>אמהרית</option><option value='russian'>רוסית</option><option value='arabic>ערבית</option><option value='thai'>תאילנדית</option></select>";
-            cGender.innerHTML = "<select><option value='male'>גבר</option><option value='female'>אישה</option></select>";
-            cAge.innerHTML = "<input type='number' min='10' max='120'/>";
+            // Fetching customers data from local server 
+            fetch('http://127.0.0.1:8887/customers.json')
+                .then(function (resp) {
+                    return resp.json();
+                })
+                .then(function (data) {
+
+                    var tr = document.getElementById('openConversations').insertRow();
+                    var cStart = tr.insertCell(0); //time of conversation
+                    var cPeriod = tr.insertCell(1); //time of the year
+                    var cName = tr.insertCell(2); //Caller's name
+                    var cCity = tr.insertCell(3); //city call is coming from
+                    var cGender = tr.insertCell(4); // Caller's gender
+                    var cAge = tr.insertCell(5); // Caller's age
+                    var cTotal = tr.insertCell(6); //Total number of calls
+                    var cProduct = tr.insertCell(7) // product type
+                    var cTopic = tr.insertCell(8); // topic 
+                    var cEnd = tr.insertCell(9);
+
+                    const date = Date.now();
+                    const dateTimeFormat = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: 'numeric' })
+                    const [{ value: month }, , { value: day }, , { value: year }, , { value: hour }, , { value: minute }] = dateTimeFormat.formatToParts(date)
+
+                    cStart.innerHTML = "<div id='" + date + "''>" + `${day}-${month}-${year} ,${hour}:${minute}` + "</div>";
+
+                    var items = ['Joining', 'Service', 'Complaint', 'Disconnecting']
+                    // var x = document.getElementById("customers");
+                    //generate random number
+                    var randomNum = getRandomArbitrary(0, data.length)
+                    // console.log(randomNum)
+                    //pull the customer from the array
+                    var customer = data[randomNum];
+
+                    //add call to total Number of calls from each customer
+                    var customerName = customer.name
+                    totalCalls[customerName] = (totalCalls[customerName] + 1) || 1;
+
+                    // totalCalls.customerName += 1;
+                    console.log("im number of total calls for: " + customer.name + " " + totalCalls[customerName])
+
+                    //set data
+                    cName.innerHTML = "<div id='cname'>" + customer.name + "</div>";
+                    cCity.innerHTML = "<div>" + customer.city + "</div>";
+                    cGender.innerHTML = "<div>" + customer.gender + "</div>";
+                    cAge.innerHTML = "<div>" + getAge(customer.birthDate) + "</div>";
+                    cTotal.innerHTML = "<div>" + totalCalls[customerName] + "</div>"; //change thi+""s
+                    cProduct.innerHTML = "<div>" + customer.products[0] + "</div>";
+                    cTopic.innerHTML = "<div>" + items[Math.floor(Math.random() * items.length)] + "</div>";
+                    cPeriod.innerText = "Summer Break";
+
+                    cEnd.innerHTML = "<button onclick='reportEndCall(this.parentNode.parentNode)'>End This Call</button>";
+                    // data.map((customer, index) => {
+
+                    //     var option = document.createElement("option");
+                    //     var temp = { customer }
+                    //     option.innerHTML = temp.customer.name;
+                    //     return x.add(option)
+                    // })
+                })
+
+            // cCity.innerHTML = "<select><option value='jerusalem'>ירושלים</option><option value='naaria'>נהריה</option><option value='haifa'>חיפה</option><option value='telAviv'>תל אביב</option><option value='ashdod'>אשדוד</option><option value='Ashkelon'>אשקלון</option><option value='beerSheva'>באר שבע</option></select>";
+            // cTopic.innerHTML = "<select><option value='Join'>הצטרפות</option><option value='service'>שירות</option><option value='complaint'>תלונה</option><option value='disconnect'>ניתוק</option></select>";
+            // cLanguage.innerHTML = "<select><option value='hebrew'>עברית</option><option value='english'>אנגלית</option><option value='amharic'>אמהרית</option><option value='russian'>רוסית</option><option value='arabic>ערבית</option><option value='thai'>תאילנדית</option></select>";
+            // cGender.innerHTML = "<select><option value='male'>גבר</option><option value='female'>אישה</option></select>";
+            // cAge.innerHTML = "<input type='number' min='10' max='120'/>";
             // cCalls.innerHTML = "<input type='number' min='10' max='120'/>";
-            cProduct.innerHTML = "<select><option value='homeInternet'>אינטרנט ביתי</option><option value='cables'>כבלים</option><option value='celular'>סלולרי</option><option value='cables'>כבלים</option></select>";
+            // cProduct.innerHTML = "<select><option value='homeInternet'>אינטרנט ביתי</option><option value='cables'>כבלים</option><option value='celular'>סלולרי</option><option value='cables'>כבלים</option></select>";
         }
 
         function reportEndCall(row) {
-            var totalCalls = parseInt(document.getElementById("total").value) || 0;
-            if (parseInt(totalCalls) > 0) {
-                document.getElementById("total").value = (--totalCalls) + "";
-            }
+            // var totalCalls = parseInt(document.getElementById("total").value) || 0;
+            // if (parseInt(totalCalls) > 0) {
+            //     document.getElementById("total").value = (--totalCalls) + "";
+            // }
 
             var message = {};
             message.id = row.cells[0].getElementsByTagName('div')[0].id;
+            message.period = row.cells[1].getElementsByTagName('div').textContent;
+            message.name = row.cells[2].getElementsByTagName('div')[0].textContent;
+            message.city = row.cells[3].getElementsByTagName('div')[0].textContent;
+            message.gender = row.cells[4].getElementsByTagName('div')[0].textContent;
+            message.age = row.cells[5].getElementsByTagName('div')[0].textContent;
+            message.totalCalls = row.cells[6].getElementsByTagName('div')[0].textContent;
+            message.products = row.cells[7].getElementsByTagName('div')[0].textContent;
+            message.topic = row.cells[8].getElementsByTagName('div')[0].textContent;
             message.totalTime = (parseInt(Date.now()) - parseInt(message.id)) / 1000; // seconds
-            message.city = row.cells[1].getElementsByTagName('select')[0].value;
-            message.gender = row.cells[4].getElementsByTagName('select')[0].value;
-            message.age = (row.cells[5].getElementsByTagName('input')[0].value || 18);
-            // message.calls = rows.cell[7].getElementsByTagName('select')[0].value;
-            message.products = row.cells[6].getElementsByTagName('select')[0].value;
-            message.topic = row.cells[2].getElementsByTagName('select')[0].value;
-            message.language = row.cells[3].getElementsByTagName('select')[0].value;
 
+            //sends out call details 
             socket.emit("callDetails", message);
             deleteRow(row);
         }
 
+        //remove call when ended
         function deleteRow(row) {
             var i = row.rowIndex;
             document.getElementById('openConversations').deleteRow(i);
         }
+
 
 
     </script>
@@ -82,6 +155,10 @@
 <!-- onload immidiately starts the socket for bidirectional communication -->
 
 <body onload="initSocket()">
+
+    <select id="customers">
+
+    </select>
     Total Waiting calls:
     <input type="number" id="total" min="0" max="200" value="0">
     <input type="button" value="Set" onclick="sendMessage(total.value)" />
@@ -90,18 +167,21 @@
         <option value='holidays'>חגים</option>
         <option value="suumberBreak">חופשות קיץ</option>
         <option value="yameiHol">ימי חול</option>
+
     </select>
     <hr>
     <input type="button" onclick="startConv()" value="Answer Call" />
     <table id="openConversations" border="1" style="background-color: burlywood;">
         <tr>
             <th>Start Time</th>
+            <th>Period</th>
+            <th>Name</th>
             <th>City</th>
-            <th>Topic</th>
-            <th>Language</th>
             <th>Gender</th>
             <th>Age</th>
+            <th>Total Calls</th>
             <th>Product</th>
+            <th>Topic</th>
             <th>End</th>
         </tr>
     </table>
