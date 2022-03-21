@@ -130,6 +130,7 @@ kafkaConsumer.on("ready", function (arg) {
 
         //counting totalCalls for the day
         ++stats.totalCalls;
+        ++stats.endOftheDay[call.topic]
 
         // Inserting call data into the redis server
         redisSender.HSET(call.id,
@@ -138,6 +139,7 @@ kafkaConsumer.on("ready", function (arg) {
             function (err, reply) {
                 console.log(reply);
             });
+        console.log(stats)
     })
 
 
