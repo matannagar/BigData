@@ -24,6 +24,15 @@
                 window.scrollTo(0, document.body.scrollHeight);
             });
 
+            socket.on("waitingTime", function (msg) {
+                var item = document.createElement('li');
+                item.textContent = msg;
+                var messages = document.getElementById('messages').innerHTML =
+                    "Avarage Waiting Time: \n " + msg;
+                // messages.set
+                window.scrollTo(0, document.body.scrollHeight);
+            });
+
             //Receiving&Presenting call information
             socket.on('callDetails', function (msg) {
                 var item = document.createElement('li');

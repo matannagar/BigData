@@ -30,6 +30,7 @@
         }
 
         function sendMessage(total) {
+
             socket.emit("totalWaitingCalls", { totalWaiting: total });
         }
         //Generating random numbers
@@ -43,6 +44,19 @@
         }
     </script>
     <script>
+        function countTime() {
+
+            var startTime = performance.now();
+            const afterClick = document.getElementById("answerCall")
+            var endTime;
+            afterClick.addEventListener('click', e => {
+                endTime = performance.now();
+
+                //sends out call details 
+                socket.emit("waitingTime", (endTime - startTime) / 1000);
+            })
+        }
+
         //counts amount of calls per customer
         var totalCalls = {}
         var holidays = {
@@ -55,98 +69,103 @@
 
 
         // generates calls from random users
-        function startConv() {
+        function startConv(total) {
 
-            // Fetching customers data from local server 
-            fetch('http://127.0.0.1:8887/customers.json')
-                .then(function (resp) {
-                    return resp.json();
-                })
-                .then(function (data) {
+            if (total > 0) {
 
-                    var tr = document.getElementById('openConversations').insertRow();
-                    var cStart = tr.insertCell(0); //time of conversation
-                    var cPeriod = tr.insertCell(1); //time of the year
-                    var cName = tr.insertCell(2); //Caller's name
-                    var cCity = tr.insertCell(3); //city call is coming from
-                    var cGender = tr.insertCell(4); // Caller's gender
-                    var cAge = tr.insertCell(5); // Caller's age
-                    var cTotal = tr.insertCell(6); //Total number of calls
-                    var cProduct = tr.insertCell(7) // product type
-                    var cTopic = tr.insertCell(8); // topic 
-                    var cEnd = tr.insertCell(9);
+                // WAITING CALLS
+                var waitingCalls = parseInt(document.getElementById("total").value) || 0;
+                if (parseInt(waitingCalls) > 0) {
+                    document.getElementById("total").value = (--waitingCalls) + "";
+                    sendMessage(waitingCalls);
+                }
 
-                    const date = Date.now();
-                    const dateTimeFormat = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: 'numeric' })
-                    const [{ value: month }, , { value: day }, , { value: year }, , { value: hour }, , { value: minute }] = dateTimeFormat.formatToParts(date)
+                // Fetching customers data from local server 
+                fetch('http://127.0.0.1:8887/customers.json')
+                    .then(function (resp) {
+                        return resp.json();
+                    })
+                    .then(function (data) {
 
-                    cStart.innerHTML = "<div id='" + date + "''>" + `${day}-${month}-${year} ,${hour}:${minute}` + "</div>";
+                        var tr = document.getElementById('openConversations').insertRow();
+                        var cStart = tr.insertCell(0); //time of conversation
+                        var cPeriod = tr.insertCell(1); //time of the year
+                        var cName = tr.insertCell(2); //Caller's name
+                        var cCity = tr.insertCell(3); //city call is coming from
+                        var cGender = tr.insertCell(4); // Caller's gender
+                        var cAge = tr.insertCell(5); // Caller's age
+                        var cTotal = tr.insertCell(6); //Total number of calls
+                        var cProduct = tr.insertCell(7) // product type
+                        var cTopic = tr.insertCell(8); // topic 
+                        var cEnd = tr.insertCell(9);
 
-                    var items = ['Joining', 'Service', 'Complaint', 'Disconnecting']
-                    // var x = document.getElementById("customers");
-                    //generate random number
-                    var randomNum = getRandomArbitrary(0, data.length)
-                    // console.log(randomNum)
-                    //pull the customer from the array
-                    var customer = data[randomNum];
+                        const date = Date.now();
+                        const dateTimeFormat = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', hour: 'numeric', minute: 'numeric' })
+                        const [{ value: month }, , { value: day }, , { value: year }, , { value: hour }, , { value: minute }] = dateTimeFormat.formatToParts(date)
 
-                    //add call to total Number of calls from each customer
-                    var customerName = customer.name
-                    totalCalls[customerName] = (totalCalls[customerName] + 1) || 1;
+                        cStart.innerHTML = "<div id='" + date + "''>" + `${day}-${month}-${year} ,${hour}:${minute}` + "</div>";
 
-                    // totalCalls.customerName += 1;
-                    console.log("im number of total calls for: " + customer.name + " " + totalCalls[customerName])
+                        var items = ['Joining', 'Service', 'Complaint', 'Disconnecting']
+                        // var x = document.getElementById("customers");
+                        //generate random number
+                        var randomNum = getRandomArbitrary(0, data.length)
+                        // console.log(randomNum)
+                        //pull the customer from the array
+                        var customer = data[randomNum];
 
-                    //set data
-                    cName.innerHTML = "<div id='cname'>" + customer.name + "</div>";
-                    cCity.innerHTML = "<div>" + customer.city + "</div>";
-                    cGender.innerHTML = "<div>" + customer.gender + "</div>";
-                    cAge.innerHTML = "<div>" + getAge(customer.birthDate) + "</div>";
-                    cTotal.innerHTML = "<div>" + totalCalls[customerName] + "</div>"; //change thi+""s
-                    cProduct.innerHTML = "<div>" + customer.products[0] + "</div>";
-                    cTopic.innerHTML = "<div>" + items[Math.floor(Math.random() * items.length)] + "</div>";
+                        //add call to total Number of calls from each customer
+                        var customerName = customer.name
+                        totalCalls[customerName] = (totalCalls[customerName] + 1) || 1;
 
-                    //Verify Period Of Time
-                    // this method uses the "holidays" object 
-                    if (holidays[month] !== undefined) {
-                        if (holidays[month].includes(parseInt(day))) {
-                            cPeriod.innerText = "Holidays";
+                        // totalCalls.customerName += 1;
+                        console.log("im number of total calls for: " + customer.name + " " + totalCalls[customerName])
+
+                        //set data
+                        cName.innerHTML = "<div id='cname'>" + customer.name + "</div>";
+                        cCity.innerHTML = "<div>" + customer.city + "</div>";
+                        cGender.innerHTML = "<div>" + customer.gender + "</div>";
+                        cAge.innerHTML = "<div>" + getAge(customer.birthDate) + "</div>";
+                        cTotal.innerHTML = "<div>" + totalCalls[customerName] + "</div>"; //change thi+""s
+                        cProduct.innerHTML = "<div>" + customer.products[0] + "</div>";
+                        cTopic.innerHTML = "<div>" + items[Math.floor(Math.random() * items.length)] + "</div>";
+
+                        //Verify Period Of Time
+                        // this method uses the "holidays" object 
+                        if (holidays[month] !== undefined) {
+                            if (holidays[month].includes(parseInt(day))) {
+                                cPeriod.innerText = "Holidays";
+                            }
                         }
-                    }
-                    else if (month == "Jul" || month == "Aug") {
-                        cPeriod.innerText = "Summer Break";
-                    }
-                    else {
-                        cPeriod.innerText = "Yamei Hol";
-                    }
+                        else if (month == "Jul" || month == "Aug") {
+                            cPeriod.innerText = "Summer Break";
+                        }
+                        else {
+                            cPeriod.innerText = "Yamei Hol";
+                        }
 
-                    cEnd.innerHTML = "<button onclick='reportEndCall(this.parentNode.parentNode)'>End This Call</button>";
-                    // data.map((customer, index) => {
+                        cEnd.innerHTML = "<button onclick='reportEndCall(this.parentNode.parentNode)'>End This Call</button>";
+                        // data.map((customer, index) => {
 
-                    //     var option = document.createElement("option");
-                    //     var temp = { customer }
-                    //     option.innerHTML = temp.customer.name;
-                    //     return x.add(option)
-                    // })
-                })
+                        //     var option = document.createElement("option");
+                        //     var temp = { customer }
+                        //     option.innerHTML = temp.customer.name;
+                        //     return x.add(option)
+                        // })
+                    })
 
-            // cCity.innerHTML = "<select><option value='jerusalem'>ירושלים</option><option value='naaria'>נהריה</option><option value='haifa'>חיפה</option><option value='telAviv'>תל אביב</option><option value='ashdod'>אשדוד</option><option value='Ashkelon'>אשקלון</option><option value='beerSheva'>באר שבע</option></select>";
-            // cTopic.innerHTML = "<select><option value='Join'>הצטרפות</option><option value='service'>שירות</option><option value='complaint'>תלונה</option><option value='disconnect'>ניתוק</option></select>";
-            // cLanguage.innerHTML = "<select><option value='hebrew'>עברית</option><option value='english'>אנגלית</option><option value='amharic'>אמהרית</option><option value='russian'>רוסית</option><option value='arabic>ערבית</option><option value='thai'>תאילנדית</option></select>";
-            // cGender.innerHTML = "<select><option value='male'>גבר</option><option value='female'>אישה</option></select>";
-            // cAge.innerHTML = "<input type='number' min='10' max='120'/>";
-            // cCalls.innerHTML = "<input type='number' min='10' max='120'/>";
-            // cProduct.innerHTML = "<select><option value='homeInternet'>אינטרנט ביתי</option><option value='cables'>כבלים</option><option value='celular'>סלולרי</option><option value='cables'>כבלים</option></select>";
+                // cCity.innerHTML = "<select><option value='jerusalem'>ירושלים</option><option value='naaria'>נהריה</option><option value='haifa'>חיפה</option><option value='telAviv'>תל אביב</option><option value='ashdod'>אשדוד</option><option value='Ashkelon'>אשקלון</option><option value='beerSheva'>באר שבע</option></select>";
+                // cTopic.innerHTML = "<select><option value='Join'>הצטרפות</option><option value='service'>שירות</option><option value='complaint'>תלונה</option><option value='disconnect'>ניתוק</option></select>";
+                // cLanguage.innerHTML = "<select><option value='hebrew'>עברית</option><option value='english'>אנגלית</option><option value='amharic'>אמהרית</option><option value='russian'>רוסית</option><option value='arabic>ערבית</option><option value='thai'>תאילנדית</option></select>";
+                // cGender.innerHTML = "<select><option value='male'>גבר</option><option value='female'>אישה</option></select>";
+                // cAge.innerHTML = "<input type='number' min='10' max='120'/>";
+                // cCalls.innerHTML = "<input type='number' min='10' max='120'/>";
+                // cProduct.innerHTML = "<select><option value='homeInternet'>אינטרנט ביתי</option><option value='cables'>כבלים</option><option value='celular'>סלולרי</option><option value='cables'>כבלים</option></select>";
+            }
         }
 
         function reportEndCall(row) {
 
-            // WAITING CALLS
-            var waitingCalls = parseInt(document.getElementById("total").value) || 0;
-            if (parseInt(waitingCalls) > 0) {
-                document.getElementById("total").value = (--waitingCalls) + "";
-                sendMessage(waitingCalls);
-            }
+
 
             var message = {};
             message.id = row.cells[0].getElementsByTagName('div')[0].id;
@@ -179,7 +198,7 @@
 <body onload="initSocket()">
     Total Waiting calls:
     <input type="number" id="total" min="0" max="200" value="0">
-    <input type="button" value="Set" onclick="sendMessage(total.value)" />
+    <input type="button" id="setCalls" value="Set" onclick="sendMessage(total.value);countTime()" />
     &nbsp;
     <select>
         <option value='holidays'>חגים</option>
@@ -188,7 +207,7 @@
 
     </select>
     <hr>
-    <input type="button" onclick="startConv()" value="Answer Call" />
+    <input type="button" id="answerCall" onclick="startConv(total.value)" value="Answer Call" />
     <table id="openConversations" border="1" style="background-color: burlywood;">
         <tr>
             <th>Start Time</th>

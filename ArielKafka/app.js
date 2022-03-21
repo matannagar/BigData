@@ -1,8 +1,59 @@
 /*
+This page is responsible for connecting to Kafka Consumer, Redis Consumer&Producers, IO.
+The data from the consumer will pass through Kafka which will use the IO to pass it on to the website.
+Data from Kafka Producer will be stored inside Redis with a given expiration time of 24 Hours.
 
+Information Calls that will be saved inside the system:
+╔════════╤════════════╤══════╤══════╤═════╤════════╤═══════════════╤═══════════════╗
+║ Period │ Start Call │ Name │ City │ Age │ Gender │ Product       │ Topic         ║
+╠════════╪════════════╪══════╪══════╪═════╪════════╪═══════════════╪═══════════════╣
+║        │            │      │      │     │        │ Home Internet │ Joining       ║
+╟────────┼────────────┼──────┼──────┼─────┼────────┼───────────────┼───────────────╢
+║        │            │      │      │     │        │ Cables        │ Service       ║
+╟────────┼────────────┼──────┼──────┼─────┼────────┼───────────────┼───────────────╢
+║        │            │      │      │     │        │ Cellular      │ Complaint     ║
+╟────────┼────────────┼──────┼──────┼─────┼────────┼───────────────┼───────────────╢
+║        │            │      │      │     │        │ All Products  │ Disconnecting ║
+╚════════╧════════════╧══════╧══════╧═════╧════════╧═══════════════╧═══════════════╝
+
+
+Data that needs to be calculated in this page:
+1. Total Waiting Calls RIGHT NOW
+2. Avarage waiting times in the last ten minutes
+
+End of the day data:
+1. Total Incoming Calls
+    - Joing Calls
+    - Complaints
+    - Disconnecting
+    - Service
+*/
+/*
+REQUIRED FUNCTIONS:
+1.Number of calls waiting RIGHT NOW
+2. Waiting time for answer
+3. total number of calls per day
+    * calls regarding joining, complaints, disconnect requests
+4. the data will be stored for AI purposes
+5. real time AI 
 */
 
-// EXPRESS APP SETUP
+let stats = {
+    endOftheDay: {
+        Joining: 0,
+        Service: 0,
+        Complaint: 0,
+        Disconnecting: 0
+    },
+    avarageWaitingTime: 0,
+    totalCalls: 0,
+}
+
+/*
+╔═══════════════╗
+║ Express Setup ║
+╚═══════════════╝
+*/
 const express = require('express');
 const app = express();
 var server = require('http').createServer(app);
@@ -14,48 +65,33 @@ const bodyParser = require('body-parser');
 // port
 const port = 3000
 
-//REDIS
+/*
+╔══════╗
+║Redis ║
+╚══════╝
+*/
+
+//REDIS CLIENT
 let redisClient = redis.createClient();
-let redisSender = redisClient.duplicate()
+redisClient.subscribe('Joining');
 redisClient.connect();
+
+// REDIS SENDER
+let redisSender = redis.createClient()
 redisSender.connect();
-// let redisPublisher = redisClient.duplicate()
-redisClient.subscribe(['calls'])
 
-redisClient.on("message", async (channel, message) => {
-    console.log("inside redisClient!")
-    // const pack = JSON.parse(data);
-    // // do things with the data
-    // pack.variable1 = 3;
-    // pack.variable2 = "hello";
-    // console.log(pack.message);
-    // io.emit('update', totalWaiting)
-});
-
-redisClient.on('connect', function () {
-    console.log('Redis Reciver is connected!');
-});
-
-redisSender.on('connect', function () {
-    console.log('Redis Sender is connected!')
-})
-
-redisSender.on('message', async (channel, message) => {
-    const call = JSON.parse(message);
-    console.log("im inside redisSender!" + channel)
-})
 //body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-
-// Kafka Configuration Consumer
-//unique user ID
+/*
+╔══════╗
+║KAFKA ║
+╚══════╝
+*/
 const uuid = require("uuid");
-
 //getting kafka for node.js
 const Kafka = require("node-rdkafka");
-
 // configuartion of karafka user
 //credentials
 const kafkaConf = {
@@ -88,17 +124,27 @@ kafkaConsumer.on("ready", function (arg) {
     kafkaConsumer.consume();
 })
     .on('data', async (data) => {
+        //data.value is a JSON string
+        // e.g: {"id":"1647855224006","name":"Orya","city":"Modii'n","gender":"male","age":"22","totalCalls":"1","products":"Home Internet","topic":"Complaint","totalTime":1.126}
         const call = JSON.parse(data.value)
-        redisSender.set('MATAN', "27", function (err, reply) {
-            console.log(reply);
-        });
-        io.emit("callDetails", call);
+
+        //counting totalCalls for the day
+        ++stats.totalCalls;
+
+        // Inserting call data into the redis server
+        redisSender.HSET(call.id,
+            'Name', call.name, 'City', call.city, 'Gender', call.gender,
+            'Products', call.products[0], 'Topic', call.topic, 'Total Time', call.totalTime,
+            function (err, reply) {
+                console.log(reply);
+            });
     })
 
-kafkaConsumer.on("data", function (m) {
-    console.log(m.value.toString());
-    console.log("printing data from kafka")
-});
+
+// kafkaConsumer.on("data", function (m) {
+//     console.log(m.value.toString());
+//     console.log("printing data from kafka")
+// });
 
 
 kafkaConsumer.on("disconnected", function (arg) {
@@ -120,6 +166,11 @@ app.set('view engine', 'ejs');
 app.use(express.static("public"));
 
 let myVar = 10;
+/*
+╔══════════╗
+║ Web-View ║
+╚══════════╝
+*/
 /*Express - Rendering the main page */
 const home = app.get('/', (req, res) => {
     res.send("<a href='/send'>Send</a> <br/><a href='/dashboard'>View</a>")
@@ -145,22 +196,36 @@ app.use(function (err, req, res, next) {
     });
 });
 
-/* SocketIO connection */
+/*
+╔══════════╗
+║ SocketIO ║
+╚══════════╝
+SocketIO connection
+*/
 io.on("connection", (socket) => {
     console.log("IO: new user connected");
+
+    // listening for number of calls right now
     socket.on("totalWaitingCalls", (msg) => {
         console.log("Total waiting calls: " + msg.totalWaiting);
         io.emit("totalWaitingCalls", msg);
     });
+
+    //listening for call details
     socket.on("callDetails", (msg) => {
         console.log(msg);
         io.emit(msg);
         kafka.publish(msg);
-        const delay = Math.floor(Math.random() * 5000 + (1000));
-        myVar = "in HERE";
-        dashboard
-
     });
+
+    //listening for waitingTimes
+    socket.on("waitingTime", (msg) => {
+        let avg = (stats.avarageWaitingTime + msg) / 2
+        stats.avarageWaitingTime = avg;
+
+        io.emit("waitingTime", stats.avarageWaitingTime);
+    })
+
 });
 
 //listen for requests
@@ -168,12 +233,3 @@ server.listen(port, () => {
     console.log(`Server: Ariel app listening at http://localhost:${port}`)
 });
 
-/*
-REQUIRED FUNCTIONS:
-1.Number of calls waiting RIGHT NOW
-2. Waiting time for answer
-3. total number of calls per day
-    * calls regarding joining, complaints, disconnect requests
-4. the data will be stored for AI purposes
-5. real time AI 
-*/
