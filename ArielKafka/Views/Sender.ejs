@@ -43,10 +43,19 @@
         }
     </script>
     <script>
+        //counts amount of calls per customer
         var totalCalls = {}
-        function startConv() {
+        var holidays = {
+            'Mar': [20, 21, 22],
+            'Apr': [15, 16, 17, 18, 19, 20, 21, 22],
+            'May': [4, 5], 6: [4, 5],
+            'Sep': [25, 26, 27],
+            'Oct': [4, 5, 9, 10, 16, 17]
+        }
 
-            //count calls from each customer
+
+        // generates calls from random users
+        function startConv() {
 
             // Fetching customers data from local server 
             fetch('http://127.0.0.1:8887/customers.json')
@@ -96,7 +105,20 @@
                     cTotal.innerHTML = "<div>" + totalCalls[customerName] + "</div>"; //change thi+""s
                     cProduct.innerHTML = "<div>" + customer.products[0] + "</div>";
                     cTopic.innerHTML = "<div>" + items[Math.floor(Math.random() * items.length)] + "</div>";
-                    cPeriod.innerText = "Summer Break";
+
+                    //Verify Period Of Time
+                    // this method uses the "holidays" object 
+                    if (holidays[month] !== undefined) {
+                        if (holidays[month].includes(parseInt(day))) {
+                            cPeriod.innerText = "Holidays";
+                        }
+                    }
+                    else if (month == "Jul" || month == "Aug") {
+                        cPeriod.innerText = "Summer Break";
+                    }
+                    else {
+                        cPeriod.innerText = "Yamei Hol";
+                    }
 
                     cEnd.innerHTML = "<button onclick='reportEndCall(this.parentNode.parentNode)'>End This Call</button>";
                     // data.map((customer, index) => {
@@ -118,10 +140,13 @@
         }
 
         function reportEndCall(row) {
-            // var totalCalls = parseInt(document.getElementById("total").value) || 0;
-            // if (parseInt(totalCalls) > 0) {
-            //     document.getElementById("total").value = (--totalCalls) + "";
-            // }
+
+            // WAITING CALLS
+            var waitingCalls = parseInt(document.getElementById("total").value) || 0;
+            if (parseInt(waitingCalls) > 0) {
+                document.getElementById("total").value = (--waitingCalls) + "";
+                sendMessage(waitingCalls);
+            }
 
             var message = {};
             message.id = row.cells[0].getElementsByTagName('div')[0].id;
@@ -146,19 +171,12 @@
             document.getElementById('openConversations').deleteRow(i);
         }
 
-
-
     </script>
 </head>
 
-//
 <!-- onload immidiately starts the socket for bidirectional communication -->
 
 <body onload="initSocket()">
-
-    <select id="customers">
-
-    </select>
     Total Waiting calls:
     <input type="number" id="total" min="0" max="200" value="0">
     <input type="button" value="Set" onclick="sendMessage(total.value)" />
