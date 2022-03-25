@@ -45,6 +45,7 @@
     </script>
     <script>
         function countTime() {
+            console.log("activated countTime function")
             var waitingCalls = parseInt(document.getElementById("total").value)
             console.log(waitingCalls)
             if (waitingCalls > 0) {
@@ -53,7 +54,6 @@
                 const afterClick = document.getElementById("answerCall")
                 var endTime;
 
-
                 afterClick.addEventListener('click', e => {
                     endTime = performance.now();
                     //sends out call details 
@@ -61,7 +61,6 @@
                 })
             }
         }
-
         //counts amount of calls per customer
         var totalCalls = {}
         var holidays = {
@@ -71,10 +70,8 @@
             'Sep': [25, 26, 27],
             'Oct': [4, 5, 9, 10, 16, 17]
         }
-
         // generates calls from random users
         function startConv(total) {
-
             if (total > 0) {
                 // WAITING CALLS
                 var waitingCalls = parseInt(document.getElementById("total").value) || 0;
@@ -150,7 +147,6 @@
                     })
             }
         }
-
         function reportEndCall(row) {
             var message = {};
             message.id = row.cells[0].getElementsByTagName('div')[0].id;
@@ -168,7 +164,6 @@
             socket.emit("callDetails", message);
             deleteRow(row);
         }
-
         //remove call when ended
         function deleteRow(row) {
             var i = row.rowIndex;
@@ -176,7 +171,6 @@
         }
     </script>
 </head>
-
 <!-- onload immidiately starts the socket for bidirectional communication -->
 
 <body onload="initSocket()">

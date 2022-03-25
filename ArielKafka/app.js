@@ -37,10 +37,7 @@ REQUIRED FUNCTIONS:
 5. real time AI 
 */
 
-var tools = require('./try')
-
-tools.hoursToMidnight()
-
+//stats is an object that is then passed to the Dashboard
 let stats = {
     endOftheDay: {
         Joining: 0,
@@ -122,6 +119,8 @@ kafkaConsumer.on("error", function (err) {
     // console.error(err);
 });
 
+
+//onLoad sync Dashboard stats with the stats object
 async function syncStats() {
     const delay = Math.floor(Math.random() * 5000 + (1000 * 20000))
     await redisSender.PEXPIRE('waitingTime', delay, (err, reply) => {
@@ -154,6 +153,7 @@ async function syncStats() {
 }
 syncStats()
 
+//set expiration time for Ten Minutes Avarage Waiting Time
 async function setExpire(bool, avg) {
 
     // const delay = 
@@ -169,6 +169,7 @@ async function setExpire(bool, avg) {
     }
 }
 
+//set expiration time for the rest of the data in redis
 async function setExpireCalls(expire) {
 
     await redisSender.EXPIRE('totalCalls', expire, (err, resp) => {
@@ -182,7 +183,7 @@ async function setExpireCalls(expire) {
         })
     }
 }
-
+//On each phonecall, immidiately update Redis
 async function updateRedis(call) {
     //set total Number of calls for the day
     var nd = new Date().setHours(23, 59, 59);
@@ -243,13 +244,12 @@ async function updateRedis(call) {
     await io.emit('stats', stats)
 
 }
-
 // consuming data from kafka and passing it on to relevant channel
 kafkaConsumer.on("ready", function (arg) {
     console.log(`kafkaConsumer ${arg.name} ready`);
     kafkaConsumer.subscribe(topics);
     kafkaConsumer.consume();
-})
+})//when data is coming through Kafka initiate actions as follows:
     .on('data', async (data) => {
         //data.value is a JSON string
         // e.g: {"id":"1647855224006","name":"Orya","city":"Modii'n","gender":"male","age":"22","totalCalls":"1","products":"Home Internet","topic":"Complaint","totalTime":1.126}
@@ -266,13 +266,6 @@ kafkaConsumer.on("ready", function (arg) {
                 console.log(reply);
             });
     })
-
-
-// kafkaConsumer.on("data", function (m) {
-//     console.log(m.value.toString());
-//     console.log("printing data from kafka")
-// });
-
 
 kafkaConsumer.on("disconnected", function (arg) {
     process.exit();
