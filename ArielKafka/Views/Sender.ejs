@@ -45,34 +45,37 @@
     </script>
     <script>
         function countTime() {
+            var waitingCalls = parseInt(document.getElementById("total").value)
+            console.log(waitingCalls)
+            if (waitingCalls > 0) {
 
-            var startTime = performance.now();
-            const afterClick = document.getElementById("answerCall")
-            var endTime;
-            afterClick.addEventListener('click', e => {
-                endTime = performance.now();
+                var startTime = performance.now();
+                const afterClick = document.getElementById("answerCall")
+                var endTime;
 
-                //sends out call details 
-                socket.emit("waitingTime", (endTime - startTime) / 1000);
-            })
+
+                afterClick.addEventListener('click', e => {
+                    endTime = performance.now();
+                    //sends out call details 
+                    socket.emit("waitingTime", (endTime - startTime) / 1000);
+                })
+            }
         }
 
         //counts amount of calls per customer
         var totalCalls = {}
         var holidays = {
-            'Mar': [20, 21, 22],
+            // 'Mar': [20, 21, 22],
             'Apr': [15, 16, 17, 18, 19, 20, 21, 22],
             'May': [4, 5], 6: [4, 5],
             'Sep': [25, 26, 27],
             'Oct': [4, 5, 9, 10, 16, 17]
         }
 
-
         // generates calls from random users
         function startConv(total) {
 
             if (total > 0) {
-
                 // WAITING CALLS
                 var waitingCalls = parseInt(document.getElementById("total").value) || 0;
                 if (parseInt(waitingCalls) > 0) {
@@ -144,29 +147,11 @@
                         }
 
                         cEnd.innerHTML = "<button onclick='reportEndCall(this.parentNode.parentNode)'>End This Call</button>";
-                        // data.map((customer, index) => {
-
-                        //     var option = document.createElement("option");
-                        //     var temp = { customer }
-                        //     option.innerHTML = temp.customer.name;
-                        //     return x.add(option)
-                        // })
                     })
-
-                // cCity.innerHTML = "<select><option value='jerusalem'>ירושלים</option><option value='naaria'>נהריה</option><option value='haifa'>חיפה</option><option value='telAviv'>תל אביב</option><option value='ashdod'>אשדוד</option><option value='Ashkelon'>אשקלון</option><option value='beerSheva'>באר שבע</option></select>";
-                // cTopic.innerHTML = "<select><option value='Join'>הצטרפות</option><option value='service'>שירות</option><option value='complaint'>תלונה</option><option value='disconnect'>ניתוק</option></select>";
-                // cLanguage.innerHTML = "<select><option value='hebrew'>עברית</option><option value='english'>אנגלית</option><option value='amharic'>אמהרית</option><option value='russian'>רוסית</option><option value='arabic>ערבית</option><option value='thai'>תאילנדית</option></select>";
-                // cGender.innerHTML = "<select><option value='male'>גבר</option><option value='female'>אישה</option></select>";
-                // cAge.innerHTML = "<input type='number' min='10' max='120'/>";
-                // cCalls.innerHTML = "<input type='number' min='10' max='120'/>";
-                // cProduct.innerHTML = "<select><option value='homeInternet'>אינטרנט ביתי</option><option value='cables'>כבלים</option><option value='celular'>סלולרי</option><option value='cables'>כבלים</option></select>";
             }
         }
 
         function reportEndCall(row) {
-
-
-
             var message = {};
             message.id = row.cells[0].getElementsByTagName('div')[0].id;
             message.period = row.cells[1].getElementsByTagName('div').textContent;
@@ -189,7 +174,6 @@
             var i = row.rowIndex;
             document.getElementById('openConversations').deleteRow(i);
         }
-
     </script>
 </head>
 

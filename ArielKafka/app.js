@@ -27,8 +27,7 @@ End of the day data:
     - Complaints
     - Disconnecting
     - Service
-*/
-/*
+
 REQUIRED FUNCTIONS:
 1.Number of calls waiting RIGHT NOW
 2. Waiting time for answer
@@ -38,6 +37,10 @@ REQUIRED FUNCTIONS:
 5. real time AI 
 */
 
+var tools = require('./try')
+
+tools.hoursToMidnight()
+
 let stats = {
     endOftheDay: {
         Joining: 0,
@@ -46,6 +49,7 @@ let stats = {
         Disconnecting: 0
     },
     avarageWaitingTime: 0,
+    tenMinWaitTime: 0,
     totalCalls: 0,
 }
 
@@ -73,16 +77,17 @@ const port = 3000
 
 //REDIS CLIENT
 let redisClient = redis.createClient();
-redisClient.subscribe('Joining');
+// redisClient.subscribe('Joining');
 redisClient.connect();
 
 // REDIS SENDER
-let redisSender = redis.createClient()
+let redisSender = redisClient.duplicate()
 redisSender.connect();
 
 //body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
 
 /*
 ╔══════╗
@@ -117,6 +122,128 @@ kafkaConsumer.on("error", function (err) {
     // console.error(err);
 });
 
+async function syncStats() {
+    const delay = Math.floor(Math.random() * 5000 + (1000 * 20000))
+    await redisSender.PEXPIRE('waitingTime', delay, (err, reply) => {
+        if (err) console.error(err)
+    })
+
+    // await redisClient.get('tenMinWaitTime').then((message) => {
+    //     if (message !== null) {
+    //         stats.tenMinWaitTime = message;
+    //     }
+    // })
+
+    await redisClient.get('totalCalls').then((message) => {
+        stats.totalCalls = message
+    })
+    await redisClient.get('waitingTime').then((message) => {
+        stats.avarageWaitingTime = message;
+    })
+
+    my_list = ["Joining", 'Disconnecting', 'Service', 'Complaint']
+    for (const item of my_list) {
+        await redisClient.get(item).then((message) => {
+            let callTopic = item;
+            stats.endOftheDay[callTopic] = message
+        })
+    }
+
+    await io.emit('stats', stats)
+
+}
+syncStats()
+
+async function setExpire(bool, avg) {
+
+    // const delay = 
+    if (bool) {
+        await redisSender.set('tenMinWaitTime', stats.tenMinWaitTime, (err, reply) => {
+            if (err) console.log(err)
+        })
+        await redisSender.PEXPIRE('tenMinWaitTime', 600000, (err, resp) => {
+            if (err) console.log(err)
+        })
+    } else {
+        await redisSender.set('tenMinWaitTime', avg, { KEEPTTL: true })
+    }
+}
+
+async function setExpireCalls(expire) {
+
+    await redisSender.EXPIRE('totalCalls', expire, (err, resp) => {
+        if (err) console.log(err)
+    })
+
+    my_list = ["Joining", 'Disconnecting', 'Service', 'Complaint']
+    for (const item of my_list) {
+        await redisSender.EXPIRE(item, expire, (err, resp) => {
+            if (err) console.log(err)
+        })
+    }
+}
+
+async function updateRedis(call) {
+    //set total Number of calls for the day
+    var nd = new Date().setHours(23, 59, 59);
+    var expire = Math.floor((nd - Date.now()) / 1000);
+
+    await redisSender.incr('totalCalls', { KEEPTTL: true }, function (err, id) {
+        redisSender.set('totalCalls', 1);
+    })
+    setExpireCalls(expire)
+
+    const delay = 600000;
+    await redisSender.get('tenMinWaitTime').then((message) => {
+        let avg = message;
+        const millis = Math.floor((Date.now() - parseInt(call.id)) / 1000);
+        stats.tenMinWaitTime = millis;
+
+        var flag;
+
+        if (message === null) {
+            flag = 1;
+            setExpire(flag, avg)
+        }
+        else {
+            flag = 0;
+            avg = (Math.floor(message) + millis) / 2;
+            stats.tenMinWaitTime = avg;
+            setExpire(flag, avg)
+            // redisSender.set('tenMinWaitTime', avg)
+        }
+    })
+
+    //emitting total number of calls 
+    await redisClient.get('totalCalls').then((message) => {
+        if (message !== null) stats.totalCalls = message;
+    })
+
+    //set avarage waiting time 
+    await redisClient.get('waitingTime').then((data) => {
+        let avg = data;
+        const millis = Math.floor((Date.now() - parseInt(call.id)) / 1000);
+        if (data !== null) {
+            avg = (Math.floor(data) + millis) / 2
+        }
+        redisSender.set('waitingTime', avg, { KEEPTTL: true })
+        stats.avarageWaitingTime = avg;
+    })
+
+    // Joining
+    await redisSender.incr(call.topic, { KEEPTTL: true }, function (err, id) {
+        redisSender.set(call.topic, 1);
+    })
+
+    await redisClient.get(call.topic).then((message) => {
+        let callTopic = call.topic;
+        stats.endOftheDay[callTopic] = message
+    })
+
+    await io.emit('stats', stats)
+
+}
+
 // consuming data from kafka and passing it on to relevant channel
 kafkaConsumer.on("ready", function (arg) {
     console.log(`kafkaConsumer ${arg.name} ready`);
@@ -128,18 +255,16 @@ kafkaConsumer.on("ready", function (arg) {
         // e.g: {"id":"1647855224006","name":"Orya","city":"Modii'n","gender":"male","age":"22","totalCalls":"1","products":"Home Internet","topic":"Complaint","totalTime":1.126}
         const call = JSON.parse(data.value)
 
-        //counting totalCalls for the day
-        ++stats.totalCalls;
-        ++stats.endOftheDay[call.topic]
+        updateRedis(call)
+        io.emit("stats", stats);
 
         // Inserting call data into the redis server
-        redisSender.HSET(call.id,
+        redisSender.HSET('Ben',
             'Name', call.name, 'City', call.city, 'Gender', call.gender,
             'Products', call.products[0], 'Topic', call.topic, 'Total Time', call.totalTime,
             function (err, reply) {
                 console.log(reply);
             });
-        console.log(stats)
     })
 
 
@@ -213,20 +338,13 @@ io.on("connection", (socket) => {
         io.emit("totalWaitingCalls", msg);
     });
 
+
     //listening for call details
     socket.on("callDetails", (msg) => {
         console.log(msg);
         io.emit(msg);
         kafka.publish(msg);
     });
-
-    //listening for waitingTimes
-    socket.on("waitingTime", (msg) => {
-        let avg = (stats.avarageWaitingTime + msg) / 2
-        stats.avarageWaitingTime = avg;
-
-        io.emit("waitingTime", stats.avarageWaitingTime);
-    })
 
 });
 

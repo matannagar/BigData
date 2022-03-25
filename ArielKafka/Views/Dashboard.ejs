@@ -3,6 +3,14 @@
 
 <head>
     <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
         function mfunction() {
 
@@ -17,47 +25,119 @@
 
             //Receiving number of total waiting calls
             socket.on('totalWaitingCalls', function (msg) {
-                var item = document.createElement('li');
-                item.textContent = msg.totalWaiting;
-                var messages = document.getElementById('messages').innerHTML = msg.totalWaiting;
+
+                var calls = msg.totalWaiting
+                if (parseInt(calls) == 0) {
+                    calls = 'No Incoming Calls'
+                }
+
+                var messages = document.getElementById('totalWaitingCalls').innerText = calls;
                 // messages.set
                 window.scrollTo(0, document.body.scrollHeight);
             });
 
+            // Average Waiting Times
             socket.on("waitingTime", function (msg) {
                 var item = document.createElement('li');
                 item.textContent = msg;
-                var messages = document.getElementById('messages').innerHTML =
-                    "Avarage Waiting Time: \n " + msg;
+                var messages = document.getElementById('waitingTime').innerText =
+                    parseInt(msg) + " Seconds";
                 // messages.set
                 window.scrollTo(0, document.body.scrollHeight);
             });
 
-            //Receiving&Presenting call information
-            socket.on('callDetails', function (msg) {
-                var item = document.createElement('li');
-                item.textContent = msg;
-                var messages = document.getElementById('messages').innerHTML =
-                    "Call Just Ended:\n " + msg.id + msg.totalTime + msg.city;
+            socket.on('stats', function (msg) {
+                var messages = document.getElementById('waitingTime').innerText =
+                    parseInt(msg.avarageWaitingTime) + " Seconds";
+                var totalCalls = document.getElementById('totalCalls').innerText = msg.totalCalls;
+                var complaints = document.getElementById('complaintCalls').innerText = msg.endOftheDay.Complaint;
+                var disconnects = document.getElementById('disconnectingCalls').innerText = msg.endOftheDay.Disconnecting;
+                var joinings = document.getElementById('joiningCalls').innerText = msg.endOftheDay.Joining;
+                var services = document.getElementById('serviceCalls').innerText = msg.endOftheDay.Service;
                 // messages.set
                 window.scrollTo(0, document.body.scrollHeight);
-            });
+            })
         }
 
     </script>
-
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
 
 <body onload="mfunction()">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                <h3 id="totalWaitingCalls">No incoming calls</h3>
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Current Waiting Calls</h5>
+                        <p class="card-text">This should be a widget.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <h3 id="waitingTime">Average Waiting Time</h3>
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h4 class="card-title">Average Waiting Time</h4>
+                        <p class="card-text">This should be a widget.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <h3 id="totalCalls">Total Calls Today</h3>
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Calls Today</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of
+                            the card's content.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  -->
+        <div class="row">
+            <div class="col-sm-4">
+                <h3 id="joiningCalls">Joining</h3>
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Joining Calls</h5>
+                        <p class="card-text">This should be a widget.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <h3 id="disconnectingCalls">Disconnecting</h3>
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h4 class="card-title">Disconnecting Calls</h4>
+                        <p class="card-text">This should be a widget.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <h3 id="complaintCalls">Complaints</h3>
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Complaints Calls</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of
+                            the card's content.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <h3 id="serviceCalls">Service</h3>
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Service Calls</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of
+                            the card's content.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <ul id="messages"></ul>
-    <form id="form" action="">
-        <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
-    <h1>HELLO</h1>
     <%= myVar %>
 </body>
 
