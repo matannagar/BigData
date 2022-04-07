@@ -57,6 +57,7 @@ let stats = {
 */
 const express = require('express');
 const app = express();
+const cors = require('cors');
 var server = require('http').createServer(app);
 const redis = require('redis')
 const io = require("socket.io")(server)
@@ -282,10 +283,8 @@ kafkaConsumer.on("disconnected", function (arg) {
 kafkaConsumer.connect();
 
 // register view engine 
-var path = require('path');
-app.use(express.static(path.join(__dirname + '/public')));
 app.set('view engine', 'ejs');
-// app.use(express.static("public"));
+app.use(express.static("public"));
 
 let myVar = 10;
 /*
@@ -297,7 +296,7 @@ let myVar = 10;
 const home = app.get('/', (req, res) => {
     res.send("<a href='/send'>Send</a> <br/><a href='/dashboard'>View</a>")
 });
-const sender = app.get('/send', (req, res) => res.render('sender'));
+const sender = app.get('/send', cors(), (req, res) => res.render('sender'));
 const dashboard = app.get('/dashboard', (req, res) => {
     res.render('dashboard', { myVar })
 });
@@ -317,6 +316,11 @@ app.use(function (err, req, res, next) {
         error: {}
     });
 });
+
+app.use(cors({
+    origin: 'http://127.0.0.1:8887',
+    optionsSuccessStatus: 200 //
+}))
 
 /*
 ╔══════════╗
