@@ -1,5 +1,6 @@
 
 var customers;
+
 function initSocket() {
     //socket is global
     socket = io.connect();
