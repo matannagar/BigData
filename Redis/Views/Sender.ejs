@@ -1,0 +1,51 @@
+<!-- 
+    Sender page is responsible for generating fake calls.
+    Each call contains the following information:
+    1. Time of year: holidays, summer break, every other day
+    2. Call start time 
+    3. Name
+    4. City
+    5. Gender
+    6. Age of the caller
+    7. Total number of calls from this caller
+    8. Product
+    9. Call topic: Joining, cancelling, service, complaint
+ -->
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="js/Sender.js"></script>
+</head>
+<!-- onload immidiately starts the socket for bidirectional communication -->
+
+<body onload="initSocket()">
+    Total Waiting calls:
+    <input type="number" id="total" min="0" max="200" value="0">
+    <input type="button" id="setCalls" value="Set" onclick="sendMessage(total.value);countTime()" />
+    &nbsp;
+    <select>
+        <option value='holidays'>חגים</option>
+        <option value="suumberBreak">חופשות קיץ</option>
+        <option value="yameiHol">ימי חול</option>
+
+    </select>
+    <hr>
+    <input type="button" id="answerCall" onclick="startConv(total.value)" value="Answer Call" />
+    <table id="openConversations" border="1" style="background-color: burlywood;">
+        <tr>
+            <th>Start Time</th>
+            <th>Period</th>
+            <th>Name</th>
+            <th>City</th>
+            <th>Gender</th>
+            <th>Age</th>
+            <th>Total Calls</th>
+            <th>Product</th>
+            <th>Topic</th>
+            <th>End</th>
+        </tr>
+    </table>
+</body>
+
+</html>

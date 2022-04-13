@@ -18,7 +18,6 @@ const redis = require('./redis/Redis')
 kafkaConsume
     .on('data', async (data) => {
         redis.syncDashboard().then((stats) => {
-            console.log(stats)
             io.emit('stats', stats)
         })
     })
