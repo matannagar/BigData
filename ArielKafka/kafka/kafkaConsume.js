@@ -10,24 +10,32 @@ const Kafka = require("node-rdkafka");
 // configuartion of karafka user
 //credentials
 const kafkaConf = {
-    "group.id": "cloudkarafka-example",
-    "metadata.broker.list": "moped-01.srvs.cloudkafka.com:9094,moped-02.srvs.cloudkafka.com:9094,moped-03.srvs.cloudkafka.com:9094".split(","),
+    "group.id": "BigDataProject",
+    "metadata.broker.list": "rocket-01.srvs.cloudkafka.com:9094,rocket-02.srvs.cloudkafka.com:9094,rocket-03.srvs.cloudkafka.com:9094".split(","),
     "socket.keepalive.enable": true,
     "security.protocol": "SASL_SSL",
     "sasl.mechanisms": "SCRAM-SHA-256",
-    "sasl.username": "mo0oa5gi",
-    "sasl.password": "4ozx-X3Eaj0H9bvA96qmmD9MY-WRMkIA",
+    "sasl.username": "oocfu1ti",
+    "sasl.password": "N9yyfVowKAlQNlyr1cSavQARLAJ7GTRM",
     "debug": "generic,broker,security"
 };
 
-const prefix = "mo0oa5gi-";
-//topic name
-const topic = `${prefix}new`;
+const prefix = "oocfu1ti-";
+const topic = `${prefix}dashboard`;
 const topics = [topic];
 
 //setting consumer client
 const kafkaConsumer = new Kafka.KafkaConsumer(kafkaConf, {});
 
+kafkaConsumer.on("ready", function (arg) {
+    console.log(`Consumer ${arg.name} ready`);
+    kafkaConsumer.subscribe(topics);
+    kafkaConsumer.consume();
+});
+
+kafkaConsumer.on("data", function (m) {
+    console.log(m.value.toString());
+});
 
 kafkaConsumer.on("disconnected", function (arg) {
     process.exit();
@@ -40,13 +48,13 @@ kafkaConsumer.on("disconnected", function (arg) {
 //     console.log(log);
 // });
 
-kafkaConsumer.on("error", function (err) {
-    // console.error(err);
-});
+// kafkaConsumer.on("error", function (err) {
+//     console.error(err);
+// });
 
 //start consuming
 kafkaConsumer.connect();
 
 module.exports = {
-	
+    consumer: kafkaConsumer
 }
