@@ -27,7 +27,6 @@ app.get('/send', (req, res) => {
     db.con.query(sqlQuery, function (err, rows, fields) {
         if (err) throw err;
         for (var i in rows) {
-            // var obj = Object.values(JSON.parse(JSON.stringify(rows[i])))
             customers.push(rows[i]);
         }
         io.on("connection", (socket) => {
@@ -39,10 +38,13 @@ app.get('/send', (req, res) => {
 
 //------------ Socket.io ----------------
 io.on("connection", (socket) => {
-    console.log("new user connected");
-    socket.on("totalWaitingCalls", (msg) => { console.log(msg.totalWaiting) });
-    socket.on("callDetails", (msg) => { console.log(msg); kafka.publish(msg) });
+    console.log("new user connected to IO");
+    // socket.on("totalWaitingCalls", (msg) => { console.log(msg.totalWaiting) });
+    socket.on("callDetails", (msg) => {
+        console.log("A new call was sent via Kafka!: \n" + msg);
+        kafka.publish(msg);
+    });
 });
 
 
-server.listen(port, () => console.log(`Ariel app listening at http://localhost:${port}`));
+server.listen(port, () => console.log(`Sender app listening at http://localhost:${port}`));

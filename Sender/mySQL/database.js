@@ -12,7 +12,7 @@ customers = []
 var sqlQuery = 'SELECT * FROM callcenter.customers;'
 con.connect(function (err) {
     if (err) throw err;
-    console.log("Connected!");
+    console.log("Connected to mySQL DB!");
 });
 
 module.exports = {

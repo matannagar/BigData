@@ -22,7 +22,7 @@ const producer = new Kafka.Producer(kafkaConf);
 const genMessage = m => new Buffer.alloc(m.length, m);
 
 producer.on("ready", function (arg) {
-  console.log(`producer Ariel is ready.`);
+  console.log(`Kafka producer is ready :)`);
 });
 producer.connect();
 
