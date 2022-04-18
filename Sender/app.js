@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
     console.log("new user connected to IO");
     // socket.on("totalWaitingCalls", (msg) => { console.log(msg.totalWaiting) });
     socket.on("callDetails", (msg) => {
-        console.log("A new call was sent via Kafka!: \n" + msg);
+        console.log("A new call was sent via Kafka!");
         kafka.publish(msg);
     });
 });
