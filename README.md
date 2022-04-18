@@ -65,12 +65,27 @@ npm i install
 node app.js
 ```
 
-## Help
+## Structure
 
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
+### Sender
+
+Responsible for loading customers data from local mySQL  
+Generating random calls and publishing the call's information via Kafka.  
+
+![sender](gifs/sender.gif)
+
+### Redis
+
+After receiving the call's information from Kafka,  
+the data is then stored inside Redis (including expiration data)  
+
+![redis](gifs/redis.gif)
+
+### mongoDB
+
+Every call is stored inside mongoDB for later studying.
+
+![mongo](gifs/mongo.gif)
 
 ## Authors
 
