@@ -5,7 +5,7 @@ const io = require("socket.io")(server)
 const port = 3001
 
 //------------ kafka------------
-const kafka = require('./kafkaProduce');
+const kafka = require('./kafka/kafkaProduce');
 const bodyParser = require('body-parser');
 
 

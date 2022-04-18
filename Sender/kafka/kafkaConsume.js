@@ -2,6 +2,7 @@
 
 const uuid = require("uuid");
 const Kafka = require("node-rdkafka");
+require("dotenv").config();
 
 const kafkaConf = {
   "group.id": "BigDataProject",
@@ -9,8 +10,8 @@ const kafkaConf = {
   "socket.keepalive.enable": true,
   "security.protocol": "SASL_SSL",
   "sasl.mechanisms": "SCRAM-SHA-256",
-  "sasl.username": "oocfu1ti",
-  "sasl.password": "N9yyfVowKAlQNlyr1cSavQARLAJ7GTRM",
+  "sasl.username": process.env.KAFKA_USER,
+  "sasl.password": process.env.KAFKA_PASS,
   "debug": "generic,broker,security"
 };
 
