@@ -9,6 +9,7 @@ let stats = {
     },
     avarageWaitingTime: 0,
     tenMinWaitTime: 0,
+    waitTimeArray: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     fiveMinWaitTime: 0,
     totalCalls: 0,
 }
@@ -20,6 +21,11 @@ redisClient.connect();
 
 async function syncDashboard() {
 
+    const waitAVGperHour = await redisClient.lRange('waitTimeArray', 0, -1)
+    waitAVGperHour.forEach(function(value,i){
+        stats.waitTimeArray[i] = value;
+    })
+    console.log(stats.waitTimeArray)
     await redisClient.get('totalCalls').then((message) => {
         stats.totalCalls = message
     })

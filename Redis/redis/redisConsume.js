@@ -30,22 +30,27 @@ async function set10MinExpire(avg) {
 }
 
 async function set5MinExpire(avg) {
-    redisClient.get('fiveMinWaitTime').then((data) => {
+    await redisClient.get('fiveMinWaitTime').then((data) => {
         if (data === null) {
             redisClient.set('fiveMinWaitTime', avg, (err, reply) => {
                 if (err) console.log(err)
             })
-            redisClient.PEXPIRE('fiveMinWaitTime', 300000, (err, resp) => {
+            redisClient.rPush('waitTimeArray', avg, (err, reply) => {
+                if (err) console.log(err)
+            })
+            redisClient.PEXPIRE('fiveMinWaitTime', 3600000, (err, resp) => {
                 if (err) console.log(err)
             })
         } else {
             redisClient.set('fiveMinWaitTime', avg, { KEEPTTL: true })
+            redisClient.lSet('waitTimeArray', -1, avg)
         }
     });
 }
 
+
 async function setExpireCalls(expire) {
-    my_list = ["totalCalls", "Joining", 'Disconnecting', 'Service', 'Complaint']
+    my_list = ["totalCalls", "Joining", 'Disconnecting', 'Service', 'Complaint', 'WaitTimeArray']
     for (const item of my_list) {
         await redisClient.EXPIRE(item, expire, (err, resp) => {
             if (err) console.log(err)
