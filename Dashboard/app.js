@@ -17,8 +17,8 @@ const redis = require('./redis/Redis')
 // consuming data from kafka and passing it on to relevant channel
 kafkaConsume
     .on('data', async (data) => {
-        console.log("got data")
-        redis.syncDashboard().then((stats) => {
+        console.log(JSON.parse(data.value))
+        redis.syncDashboard(data).then((stats) => {
             io.emit('stats', stats)
         })
     })
