@@ -429,20 +429,6 @@ function mfunction() {
     _linesMultipleDarkExample([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     _scatterPieBasicDarkExample(0, 0, 0, 0);
 
-
-    //Receiving number of total waiting calls
-    socket.on('totalWaitingCalls', function (msg) {
-
-        var calls = msg.totalWaiting
-        if (parseInt(calls) == 0) {
-            calls = 'No Incoming Calls'
-        }
-
-        var messages = document.getElementById('totalWaitingCalls').innerText = calls;
-        // messages.set
-        window.scrollTo(0, document.body.scrollHeight);
-    });
-
     socket.on('stats', function (msg) {
         // var messages = document.getElementById('waitingTime').innerText =
         //     parseInt(msg.avarageWaitingTime) + " Seconds";
@@ -454,7 +440,7 @@ function mfunction() {
         var services = document.getElementById('serviceCalls').innerText = msg.endOftheDay.Service;
         var tenMinWait = document.getElementById('tenMinWait').innerText = msg.tenMinWaitTime;
         var waitArray = msg.waitTimeArray;
-        var totalCallArray = msg.totalCallArray;
+        var totalCallArray = msg.totalCallsArray;
 
         _linesMultipleDarkExample(waitArray, totalCallArray);
         _scatterPieBasicDarkExample(parseInt(msg.endOftheDay.Joining), parseInt(msg.endOftheDay.Disconnecting), parseInt(msg.endOftheDay.Complaint), parseInt(msg.endOftheDay.Service));
