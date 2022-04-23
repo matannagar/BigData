@@ -5,7 +5,8 @@ const io = require("socket.io")(server)
 const port = 3002
 
 //------------ redis ------------
-const redis = require('./redis/redisConsume')
+const redisConsume = require('./redis/redisConsume')
+const redisProduce = require('./redis/redisProduce')
 
 
 //------------ kafka------------
@@ -16,22 +17,18 @@ const bodyParser = require('body-parser');
 
 kafka.consumer.on("data", async (data) => {
     try {
-        redis.updateRedis(data)
-        kafkaProducer.publish(JSON.parse(data.value).currWaitingCalls)
+        redisConsume.updateRedis(data)
+        redisProduce.syncDashboard().then((stats) => {
+            kafkaProducer.publish(stats)
+        })
     } catch {
-        console.log(err)
+        console.log('An error occured!')
     }
 });
 //------------
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
-// app.set('view engine', 'ejs');
-// app.use(express.static("public"));
-
-// app.get('/', (req, res) => res.send("<a href='/send'>Send</a>"));
-// app.get('/send', (req, res) => res.render('sender'));
 
 
 server.listen(port, () => console.log(`Redis app listening at http://localhost:${port}`));

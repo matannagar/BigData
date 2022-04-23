@@ -30,7 +30,7 @@ async function set10MinExpire(avg) {
 }
 
 async function set5MinExpire(avg) {
-    await redisClient.get('fiveMinWaitTime').then((data) => {
+    redisClient.get('fiveMinWaitTime').then((data) => {
         if (data === null) {
             redisClient.set('fiveMinWaitTime', avg, (err, reply) => {
                 if (err) console.log(err)
@@ -48,9 +48,8 @@ async function set5MinExpire(avg) {
     });
 }
 
-
 async function setExpireCalls(expire) {
-    my_list = ["totalCalls", "Joining", 'Disconnecting', 'Service', 'Complaint', 'WaitTimeArray']
+    my_list = ["Joining", 'Disconnecting', 'Service', 'Complaint', 'WaitTimeArray']
     for (const item of my_list) {
         await redisClient.EXPIRE(item, expire, (err, resp) => {
             if (err) console.log(err)
@@ -64,6 +63,16 @@ async function updateRedis(data) {
 
     await redisClient.incr('totalCalls', { KEEPTTL: true }, function (err, id) {
         redisClient.set('totalCalls', 1);
+        redisClient.PEXPIRE('totalCalls', 600000, (err, resp) => {
+            if (err) console.log(err)
+        })
+        redisClient.rPush('totalCallsArray', data, (err, reply) => {
+            if (err) console.log(err)
+        })
+    })
+
+    await redisClient.get('totalCalls').then((data) => {
+        redisClient.lSet('totalCallsArray', -1, data)
     })
 
     // increment type of call 
@@ -72,6 +81,8 @@ async function updateRedis(data) {
     })
 
     await redisClient.set('lastWaitingTime', call.waitTime)
+
+    await redisClient.set('currWaitingCalls', call.currWaitingCalls)
 
     let avg = Math.floor((Date.now() - parseInt(call.id)) / 1000);
     await redisClient.get('waitingTime').then((data) => {
@@ -91,25 +102,6 @@ async function updateRedis(data) {
 
     console.log("New call inserted to redis!")
 }
-
-// // --------- APP VIEW -------------
-// app.get('/', (req, res) => res.send('Hello World!'))
-
-// app.use(function (req, res, next) {
-//     var err = new Error('Not Found');
-//     err.status = 404;
-//     next(err);
-// });
-
-// app.use(function (err, req, res, next) {
-//     res.status(err.status || 500);
-//     res.render('error', {
-//         message: err.message,
-//         error: {}
-//     });
-// });
-
-
 
 module.exports = {
     consumer: redisClient,
