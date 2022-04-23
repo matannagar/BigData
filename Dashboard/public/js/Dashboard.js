@@ -194,7 +194,7 @@ var _linesMultipleDarkExample = function(num, time) {
                 title: [
                     {
                         left: 'center',
-                        text: 'Limitless template sales',
+                        text: 'hourly waiting time',
                         top: 0,
                         textStyle: {
                             fontSize: 15,
@@ -204,7 +204,7 @@ var _linesMultipleDarkExample = function(num, time) {
                     },
                     {
                         left: 'center',
-                        text: 'Londinium template sales',
+                        text: 'hourly waiting calls',
                         top: 240,
                         textStyle: {
                             fontSize: 15,
@@ -430,7 +430,7 @@ function mfunction() {
     alert("connected to dashboard");
 
     _scatterPieBasicDarkExample(0, 0, 0, 0);
-    _linesMultipleDarkExample([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8], [1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8]);
+    _linesMultipleDarkExample([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,1,2,3,4,5,6], [1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,1,2,3,4,5,6]);
 
 
     //Receiving number of total waiting calls
@@ -455,8 +455,9 @@ function mfunction() {
         var joinings = document.getElementById('joiningCalls').innerText = msg.endOftheDay.Joining;
         var services = document.getElementById('serviceCalls').innerText = msg.endOftheDay.Service;
         var tenMinWait = document.getElementById('tenMinWait').innerText = msg.tenMinWaitTime;
+        var waitArray =  msg.waitTimeArray;
 
-        _linesMultipleDarkExample([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8], [1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8]);
+        _linesMultipleDarkExample(waitArray, waitArray);
         _scatterPieBasicDarkExample(parseInt(msg.endOftheDay.Joining), parseInt(msg.endOftheDay.Disconnecting), parseInt(msg.endOftheDay.Complaint), parseInt(msg.endOftheDay.Service));
         // messages.set
         window.scrollTo(0, document.body.scrollHeight);
