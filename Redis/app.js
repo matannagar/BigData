@@ -15,7 +15,7 @@ const kafkaProducer = require('./kafka/kafkaProduce')
 const bodyParser = require('body-parser');
 
 
-kafka.consumer.on("data", async (data) => {
+kafka.consumer.on("data", function (data) {
     try {
         redisConsume.updateRedis(data)
         redisProduce.syncDashboard().then((stats) => {

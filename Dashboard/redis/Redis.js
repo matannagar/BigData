@@ -33,8 +33,6 @@ async function syncDashboard(data) {
     totalCallsPerHour.forEach(function (value, i) {
         stats.totalCallsArray[i] = parseInt(value);
     })
-    console.log(stats.totalCallsArray)
-    console.log(stats.waitTimeArray)
     await redisClient.get('totalCalls').then((message) => {
         stats.totalCalls = message
     })

@@ -12,15 +12,16 @@ const kafka = require('./kafka/kafkaConsume');
 const kafkaConsume = kafka.consumer
 
 // --------------- Redis
-const redis = require('./redis/Redis')
+// const redis = require('./redis/Redis')
 
 // consuming data from kafka and passing it on to relevant channel
 kafkaConsume
     .on('data', async (data) => {
-        console.log(JSON.parse(data.value))
-        redis.syncDashboard(data).then((stats) => {
-            io.emit('stats', stats)
-        })
+        try {
+            io.emit('stats', JSON.parse(data.value))
+        } catch {
+            console.log("an error occured!")
+        }
     })
 
 // ---------------- WebView

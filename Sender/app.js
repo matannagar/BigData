@@ -40,9 +40,9 @@ app.get('/send', (req, res) => {
 io.on("connection", (socket) => {
     console.log("new user connected to IO");
     // socket.on("totalWaitingCalls", (msg) => { console.log(msg.totalWaiting) });
-    socket.on("callDetails", (msg) => {
+    socket.on("callDetails", async (msg) => {
+        await kafka.publish(msg);
         console.log("A new call was sent via Kafka!");
-        kafka.publish(msg);
     });
 });
 

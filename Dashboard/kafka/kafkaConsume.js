@@ -33,9 +33,9 @@ kafkaConsumer.on("ready", function (arg) {
     kafkaConsumer.consume();
 });
 
-kafkaConsumer.on("data", function (m) {
-    console.log(m.value.toString());
-});
+// kafkaConsumer.on("data", function (m) {
+//     console.log(m.value.toString());
+// });
 
 kafkaConsumer.on("disconnected", function (arg) {
     process.exit();
