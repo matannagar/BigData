@@ -8,6 +8,7 @@
     <title>BigData analytics by Matan-Ben Nagar and Asahel Cohen</title>
 
     <script src="/socket.io/socket.io.js"></script>
+
     <!-- Global stylesheets -->
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900" rel="stylesheet"
         type="text/css">
@@ -35,35 +36,13 @@
     <script src="Limitless_3_0/Template/global_assets/js/demo_charts/pages/dashboard/dark/progress.js"></script>
     <script src="Limitless_3_0/Template/global_assets/js/demo_charts/pages/dashboard/dark/pies.js"></script>
 
-
-    <!-- <script src="widgets/pie_basic.js"></script> -->
+    <script type="text/javascript" src="js/components/TwoGraph.js"></script>
+    <script type="text/javascript" src="js/components/PieChart.js"></script>
     <!-- /theme JS files -->
 
 </head>
 
 <body onload="mfunction()">
-
-
-    <!-- Main navbar -->
-    <div class="navbar navbar-expand-lg navbar-light navbar-static">
-        <div class="d-flex flex-1 d-lg-none">
-            <button type="button" class="navbar-toggler sidebar-mobile-main-toggle">
-                <i class="icon-transmission"></i>
-            </button>
-            <button data-target="#navbar_search" type="button" class="navbar-toggler" data-toggle="collapse">
-                <i class="icon-search4"></i>
-            </button>
-        </div>
-
-        <div class="navbar-brand text-center text-lg-left">
-            <a href="index.html" class="d-inline-block">
-                <img src="images/phone-icon.svg" class="d-none d-sm-block"
-                    alt="">
-            </a>
-        </div>
-    </div>
-    <!-- /main navbar -->
-
 
     <!-- Page header -->
     <div class="page-header">
@@ -239,7 +218,7 @@
                 </div>
                 <!-- /quick stats boxes -->
 
-                <!-- Pie and donut -->
+                <!-- Pie chart -->
                 <div class="row">
                     <div class="col-xl-6">
                         <!-- Basic pie -->
@@ -309,6 +288,7 @@
                     <!-- /quick stats boxes -->
 
                 </div>
+                <!-- /Pie chart -->
 
                 <!-- Line multiples -->
                 <div class="card">
@@ -324,11 +304,6 @@
                 </div>
                 <!-- /line multiples -->
 
-
-
-
-
-
             </div>
             <!-- /content area -->
 
@@ -337,7 +312,6 @@
 
     </div>
     <!-- /page content -->
-
 
     <!-- Footer -->
     <div class="navbar navbar-expand-lg navbar-light">
