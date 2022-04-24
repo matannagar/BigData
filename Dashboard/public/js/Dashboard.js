@@ -96,9 +96,9 @@ var _linesMultipleDarkExample = function (num, time) {
                     return (
                         a[0]['axisValueLabel'] + "<br>" +
                         '<span class="badge badge-mark mr-2" style="border-color: ' + a[0]['color'] + '"></span>' +
-                        a[0]['seriesName'] + ': ' + a[0]['value'] + ' sales' + "<br>" +
+                        a[0]['seriesName'] + ': ' + a[0]['value'] + ' seconds' + "<br>" +
                         '<span class="badge badge-mark mr-2" style="border-color: ' + a[1]['color'] + '"></span>' +
-                        a[1]['seriesName'] + ': ' + a[1]['value'] + ' sales'
+                        a[1]['seriesName'] + ': ' + a[1]['value']
                     );
                 }
             },
@@ -230,7 +230,7 @@ var _linesMultipleDarkExample = function (num, time) {
             // Add series
             series: [
                 {
-                    name: 'Limitless',
+                    name: 'waiting',
                     type: 'line',
                     smooth: true,
                     symbol: 'circle',
@@ -243,7 +243,7 @@ var _linesMultipleDarkExample = function (num, time) {
                     data: num,
                 },
                 {
-                    name: 'Londinium',
+                    name: 'hourly number',
                     type: 'line',
                     xAxisIndex: 1,
                     yAxisIndex: 1,
